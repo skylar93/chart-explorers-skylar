@@ -43,6 +43,7 @@ a {
 #info {
   align-items: right;
   text-align: right;
+  margin-right: 10%;
 }
 
 #date-range-container {

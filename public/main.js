@@ -1,8 +1,11 @@
 const { min } = require("d3-array");
 
 function createLineChart() {
-    d3.csv('SPX.csv').then(function(data) {
-        data.forEach(function(d) {
+    Promise.all([
+        d3.csv('interest_rate.csv'), // Replace with the actual path of your first CSV file
+        d3.csv('SPX.csv')  // Replace with the actual path of your second CSV file
+    ]).then(function([data1, data2]) {
+        data1.forEach(function(d) {
             d.Date = d3.timeParse('%Y-%m-%d')(d.Date);
             d['Close'] = parseFloat(d['Close'].replace(',', ''));
         });
@@ -25,7 +28,7 @@ function createLineChart() {
             .range([margin.left, width - margin.right]);
 
         const y = d3.scaleLinear()
-            .domain([d3.min(data, d => d['Close']), d3.max(data, d => d['Close'])])
+            .domain([d3.min(data1, d => d['Close']), d3.max(data1, d => d['Close'])])
             .nice()
             .range([height - margin.bottom, margin.top]);
 
@@ -34,7 +37,7 @@ function createLineChart() {
             .y(d => y(d['Close']));
 
         const path = svg.append('path')
-            .data([data])
+            .data1([data1])
             .attr('class', 'line')
             .attr('d', line);
 
@@ -102,7 +105,7 @@ function createLineChart() {
                 endDate = maxDate
             }
             
-            const filteredData = data.filter(d => d.Date >= startDate && d.Date <= endDate);
+            const filteredData = data1.filter(d => d.Date >= startDate && d.Date <= endDate);
 
             x.domain([startDate, endDate]).nice();
 
@@ -144,22 +147,22 @@ function createLineChart() {
 
         const bisect = d3.bisector(d => d.Date).center;
         function pointermoved(event) {
-            const i = bisect(data, x.invert(d3.pointer(event)[0]));
+            const i = bisect(data1, x.invert(d3.pointer(event)[0]));
             tooltip.style("display", null);
-            tooltip.attr("transform", `translate(${x(data[i].Date)},${y(data[i].Close)})`);
+            tooltip.attr("transform", `translate(${x(data1[i].Date)},${y(data1[i].Close)})`);
         
             const path = tooltip.selectAll("path")
-                .data([,])
+                .data1([,])
                 .join("path")
                 .attr("fill", "white")
                 .attr("stroke", "black");
         
             const text = tooltip.selectAll("text")
-                .data([,])
+                .data1([,])
                 .join("text")
                 .call(text => text
                     .selectAll("tspan")
-                    .data([formatDate(data[i].Date), formatValue(data[i].Close)])
+                    .data1([formatDate(data1[i].Date), formatValue(data1[i].Close)])
                     .join("tspan")
                     .attr("x", 0)
                     .attr("y", (_, i) => `${i * 1.1}em`)
