@@ -42,7 +42,7 @@ function createLineChart() {
             .y(d => y(d['Close']));
 
         const path = svg.append('path')
-            .data1([data1])
+            .data([data1])
             .attr('class', 'line')
             .attr('d', line);
 
@@ -157,13 +157,13 @@ function createLineChart() {
             tooltip.attr("transform", `translate(${x(data1[i].Date)},${y(data1[i].Close)})`);
         
             const path = tooltip.selectAll("path")
-                .data1([,])
+                .data([,])
                 .join("path")
                 .attr("fill", "white")
                 .attr("stroke", "black");
         
             const text = tooltip.selectAll("text")
-                .data1([,])
+                .data([,])
                 .join("text")
                 .call(text => text
                     .selectAll("tspan")
