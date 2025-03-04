@@ -2,8 +2,8 @@ const { min } = require("d3-array");
 
 function createLineChart() {
     Promise.all([
-        d3.csv('interest_rate.csv'), // Replace with the actual path of your first CSV file
-        d3.csv('SPX.csv')  // Replace with the actual path of your second CSV file
+        d3.csv('interest_rate.csv'),
+        d3.csv('SPX.csv')
     ]).then(function([data1, data2]) {
         data1.forEach(function(d) {
             d.Date = d3.timeParse('%Y-%m-%d')(d.Date);
@@ -15,8 +15,8 @@ function createLineChart() {
             d['Close'] = parseFloat(d['Close'].replace(',', ''));
         });
 
-        const width = "80%";
-        const height = "40%";
+        const width = 800;
+        const height = 400;
         const margin = { top: 40, right: 30, bottom: 60, left: 80 };
 
         const minDate = d3.timeParse('%Y-%m-%d')('1954-07-01');
@@ -27,6 +27,8 @@ function createLineChart() {
             .attr('height', height)
             .on("pointerenter pointermove", pointermoved)
             .on("pointerleave", pointerleft);
+
+        document.getElementById('chart-container').appendChild(svg.node());
 
         const x = d3.scaleTime()
             .domain([minDate, maxDate]) 
@@ -82,8 +84,6 @@ function createLineChart() {
             .style("text-anchor", "middle")
             .text("Closing Price $ (USD)");
 
-        document.getElementById('chart-container').appendChild(svg.node());
-
         document.getElementById('start-date').value = d3.timeFormat('%Y-%m-%d')(minDate);
         document.getElementById('end-date').value = d3.timeFormat('%Y-%m-%d')(maxDate);
 
@@ -132,62 +132,6 @@ function createLineChart() {
                 .style('font-size', '14px');
         }
 
-        const tooltip = svg.append("g");
-
-        function formatValue(value) {
-            return value.toLocaleString("en", {
-              style: "currency",
-              currency: "USD"
-            });
-        }
-          
-        function formatDate(date) {
-            return date.toLocaleString("en", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-                timeZone: "UTC"
-            });
-        }
-
-        const bisect = d3.bisector(d => d.Date).center;
-        function pointermoved(event) {
-            const i = bisect(data1, x.invert(d3.pointer(event)[0]));
-            tooltip.style("display", null);
-            tooltip.attr("transform", `translate(${x(data1[i].Date)},${y(data1[i].Close)})`);
-        
-            const path = tooltip.selectAll("path")
-                .data([,])
-                .join("path")
-                .attr("fill", "white")
-                .attr("stroke", "black");
-        
-            const text = tooltip.selectAll("text")
-                .data([,])
-                .join("text")
-                .call(text => text
-                    .selectAll("tspan")
-                    .data1([formatDate(data1[i].Date), formatValue(data1[i].Close)])
-                    .join("tspan")
-                    .attr("x", 0)
-                    .attr("y", (_, i) => `${i * 1.1}em`)
-                    .attr("font-weight", (_, i) => i ? null : "bold")
-                    .text(d => d));
-        
-            size(text, path);
-        }
-        
-        function pointerleft() {
-            tooltip.style("display", "none");
-        }
-
-        function size(text, path) {
-            const {x, y, width: w, height: h} = text.node().getBBox();
-            text.attr("transform", `translate(${-w / 2},${15 - y})`);
-            path.attr("d", `M${-w / 2 - 10},5H-5l5,-5l5,5H${w / 2 + 10}v${h + 20}h-${w + 20}z`);
-        }
-
         document.getElementById('date-change').addEventListener('click', updateChart);
     });
 }
-
