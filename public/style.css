@@ -44,6 +44,10 @@ a {
   margin-bottom: 20px;
 }
 
+#chart-range-container {
+  width: 80%;
+}
+
 #writeup {
   width: 1100px;
   text-align: left;
