@@ -10,8 +10,8 @@ function createLineChart() {
             d['Close'] = parseFloat(d['Close'].replace(',', ''));
         });
 
-        const width = 1100;
-        const height = 550;
+        const width = "80%";
+        const height = "40%";
         const margin = { top: 40, right: 30, bottom: 60, left: 80 };
 
         const minDate = d3.timeParse('%Y-%m-%d')('1954-07-01');
