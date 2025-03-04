@@ -27,9 +27,24 @@ footer {
 
 h1 {
   margin-bottom: 32px;
-  color: #492a7c;
+  color: #bb2279;
 }
 
 a {
   text-decoration: none;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 2;
+}
+
+#date-range-container {
+  margin-bottom: 20px;
+}
+
+#writeup {
+  width: 1100px;
+  text-align: left;
 }

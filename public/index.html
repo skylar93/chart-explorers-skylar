@@ -27,9 +27,23 @@
     <h1><a href=".">TODO: Your project name</a></h1>
 
     <p>
-      <strong>Team Members</strong>: [TODO] team member #1, team member #2, team member #3, team member #4
+      <strong>Team Members</strong>: Sophia Susanto and Julia Lee
     </p>
   </header>
+
+  <center>
+    <div id="date-range-container">
+      <label for="start-date">Start Date:</label>
+      <input type="date" id="start-date">
+      <label for="end-date">End Date:</label>
+      <input type="date" id="end-date">
+      <button type="button" id="date-change">Change</button>
+    </div>
+    <div id="chart-container"></div> 
+    <script>
+        createLineChart();
+    </script>
+  </center>
 
   <footer>
     <p>
