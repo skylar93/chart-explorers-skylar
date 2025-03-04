@@ -14,8 +14,8 @@ function createLineChart() {
         const height = 550;
         const margin = { top: 40, right: 30, bottom: 60, left: 80 };
 
-        const minDate = '1954-07-01';
-        const maxDate = '2017-03-16';
+        const minDate = d3.timeParse('%Y-%m-%d')('1954-07-01');
+        const maxDate = d3.timeParse('%Y-%m-%d')('2017-03-16');
 
         const svg = d3.create('svg')
             .attr('width', width)
