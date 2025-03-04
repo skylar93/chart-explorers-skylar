@@ -41,6 +41,7 @@ a {
 }
 
 #info {
+  align-items: right;
   text-align: right;
 }
 
