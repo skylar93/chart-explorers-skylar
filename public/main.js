@@ -12,7 +12,6 @@ function createLineChart() {
 
         data2.forEach(function(d) {
             d.Date = d3.timeParse('%Y-%m-%d')(d.Year + "-" + d.Month + "-" + d.Day);
-            d['Close'] = parseFloat(d['Close'].replace(',', ''));
         });
 
         const width = 800;
