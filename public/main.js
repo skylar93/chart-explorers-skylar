@@ -2,8 +2,8 @@ const { min } = require("d3-array");
 
 function createLineChart() {
     Promise.all([
-        d3.csv('interest_rate.csv'),
-        d3.csv('SPX.csv')
+        d3.csv('SPX.csv'),
+        d3.csv('interest_rate.csv')
     ]).then(function([data1, data2]) {
         data1.forEach(function(d) {
             d.Date = d3.timeParse('%Y-%m-%d')(d.Date);
