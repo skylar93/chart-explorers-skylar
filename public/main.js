@@ -84,6 +84,21 @@ function createLineChart() {
             .style("text-anchor", "middle")
             .text("Closing Price $ (USD)");
 
+        svg.append('g')
+            .attr('class', 'y-axis')
+            .attr('transform', `translate(${width - margin.right}, 0)`)
+            .call(d3.axisRight(y2))
+            .selectAll('text')
+            .style('font-size', '14px'); 
+
+        svg.append("text")
+            .attr("transform", "rotate(90)")
+            .attr("y", width - margin.right + 40)
+            .attr("x", height / 2)
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+            .text("Interest Rate (%)");
+
         document.getElementById('start-date').value = d3.timeFormat('%Y-%m-%d')(minDate);
         document.getElementById('end-date').value = d3.timeFormat('%Y-%m-%d')(maxDate);
 
