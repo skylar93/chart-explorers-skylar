@@ -10,6 +10,11 @@ function createLineChart() {
             d['Close'] = parseFloat(d['Close'].replace(',', ''));
         });
 
+        data2.forEach(function(d) {
+            d.Date = d3.timeParse('%Y-%m-%d')(d.Year + "-" + d.Month + "-" + d.Day);
+            d['Close'] = parseFloat(d['Close'].replace(',', ''));
+        });
+
         const width = "80%";
         const height = "40%";
         const margin = { top: 40, right: 30, bottom: 60, left: 80 };
