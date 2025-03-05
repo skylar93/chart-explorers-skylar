@@ -5,13 +5,14 @@ function createLineChart() {
         d3.csv('SPX.csv'),
         d3.csv('interest_rate.csv')
     ]).then(function([data1, data2]) {
-        data1.forEach(function(d) {
-            d.Date = d3.timeParse('%Y-%m-%d')(d.Date);
-            d['Close'] = parseFloat(d['Close'].replace(',', ''));
+        data1.forEach(function(d1) {
+            d1.Date = d3.timeParse('%Y-%m-%d')(d1.Date);
+            d1['Close'] = parseFloat(d1['Close'].replace(',', ''));
         });
 
-        data2.forEach(function(d) {
-            d.Date = d3.timeParse('%Y-%m-%d')(d.Year + "-" + d.Month + "-" + d.Day);
+        data2.forEach(function(d2) {
+            d2.Date = d3.timeParse('%Y-%m-%d')(d2.Year + "-" + d2.Month + "-" + d2.Day);
+            d2['Effective Federal Funds Rate'] = parseFloat(d2['Effective Federal Funds Rate'].replace(',', ''));
         });
 
         const width = 800;
@@ -33,14 +34,29 @@ function createLineChart() {
             .domain([minDate, maxDate]) 
             .range([margin.left, width - margin.right]);
 
-        const y = d3.scaleLinear()
-            .domain([d3.min(data1, d => d['Close']), d3.max(data1, d => d['Close'])])
+        const y1 = d3.scaleLinear()
+            .domain([d3.min(data1, d1 => d1['Close']), d3.max(data1, d1 => d1['Close'])])
+            .nice()
+            .range([height - margin.bottom, margin.top]);
+
+        const y2 = d3.scaleLinear()
+            .domain([d3.min(data2, d2 => d2['Effective Federal Funds Rate']), d3.max(data2, d2 => d2['Effective Federal Funds Rate'])])
             .nice()
             .range([height - margin.bottom, margin.top]);
 
         const line = d3.line()
-            .x(d => x(d.Date))
-            .y(d => y(d['Close']));
+            .x(d1 => x(d1.Date))
+            .y(d1 => y1(d1['Close']));
+
+        const barWidth = 2;
+        const bars = svg.selectAll('rect')
+            .data(data2)
+            .append('rect')
+            .attr('x', d2 => x(d2.Date) - barWidth / 2)
+            .attr('y', d2 => y2(d2['Effective Federal Funds Rate']))
+            .attr('width', barWidth)
+            .attr('height', d2 => height - margin.bottom - y2(d2['Effective Federal Funds Rate']))
+            .attr('fill', 'orange');
 
         const path = svg.append('path')
             .data([data1])
@@ -71,13 +87,13 @@ function createLineChart() {
         svg.append('g')
             .attr('class', 'y-axis')
             .attr('transform', `translate(${margin.left}, 0)`)
-            .call(d3.axisLeft(y))
+            .call(d3.axisLeft(y1))
             .selectAll('text')
             .style('font-size', '14px'); 
         
         svg.append("text")
             .attr("transform", "rotate(-90)")
-            .attr("y",  margin.left - 75)
+            .attr("y", margin.left - 75)
             .attr("x", -(height / 2))
             .attr("dy", "1em")
             .style("text-anchor", "middle")
@@ -113,25 +129,33 @@ function createLineChart() {
             }
 
             if (startDate < minDate) {
-                alert("Data ranges from Jan 1928 - Oct 2020. Setting start date to valid date.")
+                alert("Data ranges from Jul 1954 - Mar 2017. Setting start date to valid date.")
                 document.getElementById('start-date').value = d3.timeFormat('%Y-%m-%d')(minDate);
                 startDate = minDate
             }
 
             if (endDate > maxDate) {
-                alert("Data ranges from Jan 1928 - Oct 2020. Setting end date to valid date.")
+                alert("Data ranges from Jan 1954 - Mar 2017. Setting end date to valid date.")
                 document.getElementById('end-date').value = d3.timeFormat('%Y-%m-%d')(maxDate);
                 endDate = maxDate
             }
             
-            const filteredData = data1.filter(d => d.Date >= startDate && d.Date <= endDate);
+            const filteredData1 = data1.filter(d1 => d1.Date >= startDate && d1.Date <= endDate);
+            const filteredData2 = data2.filter(d2 => d2.Date >= startDate && d2.Date <= endDate);
 
             x.domain([startDate, endDate]).nice();
+            y1.domain([d3.min(filteredData1, d1 => d1['Close']), d3.max(filteredData1, d1 => d1['Close'])]).nice();
+            y2.domain([d3.min(filteredData2, d2 => d2['Effective Federal Funds Rate']), d3.max(filteredData2, d2 => d2['Effective Federal Funds Rate'])]).nice();
 
-            y.domain([d3.min(filteredData, d => d['Close']), d3.max(filteredData, d => d['Close'])]).nice();
-
-            path.datum(filteredData)
+            path.datum(filteredData1)
                 .attr('d', line);
+
+            bars.data(filteredData2)
+                .transition()
+                .duration(500)
+                .attr('x', d2 => x(d2.Date) - barWidth / 2)
+                .attr('y', d2 => y2(d2['Effective Federal Funds Rate']))
+                .attr('height', d2 => height - margin.bottom - y2(d2['Effective Federal Funds Rate']));
 
             svg.select('.x-axis')
                 .transition()
@@ -142,7 +166,13 @@ function createLineChart() {
             svg.select('.y-axis')
                 .transition()
                 .duration(500)
-                .call(d3.axisLeft(y))
+                .call(d3.axisLeft(y1))
+                .style('font-size', '14px');
+
+            svg.select('.y-axis')
+                .transition()
+                .duration(500)
+                .call(d3.axisRight(y2))
                 .style('font-size', '14px');
         }
 
