@@ -40,6 +40,37 @@ a {
   stroke-width: 2;
 }
 
+.unemployment-line {
+  fill: none;
+  stroke: red;
+  stroke-width: 1.5;
+}
+
+.inflation-line {
+  fill: none;
+  stroke: green;
+  stroke-width: 1.5;
+}
+
+.legend text {
+  fill: #333;
+}
+
+.grid line {
+  stroke: #e0e0e0;
+  stroke-opacity: 0.7;
+  shape-rendering: crispEdges;
+}
+
+.grid path {
+  stroke-width: 0;
+}
+
+.y-axis-indicators text {
+  font-size: 10px;
+  fill: #d62728;
+}
+
 #info {
   align-items: right;
   text-align: right;
@@ -57,4 +88,42 @@ a {
 #writeup {
   width: 1100px;
   text-align: left;
+}
+
+/* Correlation Matrix Heatmap Styles */
+#correlation-container {
+  width: 800px;
+  margin: 0 auto;
+}
+
+#correlation-heatmap {
+  margin: 20px auto;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.cell-tooltip {
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-size: 12px;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.matrix-label {
+  font-size: 12px;
+  font-weight: bold;
+  text-anchor: end;
+}
+
+.correlation-legend {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 12px;
 }

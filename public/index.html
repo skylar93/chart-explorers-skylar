@@ -6,12 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <!-- Uncomment if you want your page to NOT be indexed by search engines: -->
   <meta name="robots" content="none">
-  <script src="main.js"></script>
   <link rel="stylesheet" href="style.css" />
   <title>Factors Behind the Chart</title>
 
   <!-- Uncomment if using d3: -->
- <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
 
   <!-- Uncomment if using Vega-Lite -->
   <!-- <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
@@ -42,12 +41,22 @@
     </div>
     <br>
     <div id="chart-container">
-      <script>
-        createLineChart();
-      </script>
+      <label for="log-scale">Use log scale</label>
+      <input type="checkbox" id="log-scale">
     </div> 
-    <p id="info">*Data ranges from Jan 1928 - Oct 2020</p>
+    <p id="info">*Data ranges from Jan 1954 - Mar 2017</p>
     <br>
+
+    <div id="correlation-container">
+      <h3>Correlation Matrix Heatmap</h3>
+      <p>Visualizing the relationships between S&P 500 and economic indicators</p>
+      <div id="correlation-heatmap"></div>
+    </div>
+    <br>
+
+    <div> 
+      put
+    </div>
     <div id="external-resources">
       <h4>External Resources</h4>
       <strong><a href="https://kaggle.com/datasets/henryhan117/sp-500-historical-data">Data Source - S&P 500 Historical Data</a> </strong><br>
