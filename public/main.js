@@ -1,8 +1,4 @@
-// Remove the require statement at the beginning as it's not supported in browsers
-// const { min } = require("d3-array"); <- REMOVE THIS LINE
-
 function createLineChart() {
-    // Create a dropdown menu for indicators
     const selectContainer = document.createElement('div');
     selectContainer.style.marginBottom = '10px';
     selectContainer.style.textAlign = 'center';
@@ -15,7 +11,6 @@ function createLineChart() {
     const indicatorSelect = document.createElement('select');
     indicatorSelect.id = 'indicator-select';
     
-    // Add options to the dropdown
     const options = [
         { value: 'interest', text: 'Interest Rate' },
         { value: 'unemployment', text: 'Unemployment Rate' },
@@ -29,11 +24,9 @@ function createLineChart() {
         indicatorSelect.appendChild(optionElement);
     });
     
-    // Add the elements to the container
     selectContainer.appendChild(indicatorLabel);
     selectContainer.appendChild(indicatorSelect);
     
-    // Insert the dropdown before the chart container
     const chartContainer = document.getElementById('chart-container');
     chartContainer.parentNode.insertBefore(selectContainer, chartContainer);
 
@@ -41,6 +34,7 @@ function createLineChart() {
         d3.csv('SPX.csv'),
         d3.csv('interest_rate.csv')
     ]).then(function([data1, data2]) {
+
         data1.forEach(function(d1) {
             d1.Date = d3.timeParse('%Y-%m-%d')(d1.Date);
             d1['Close'] = parseFloat(d1['Close'].replace(',', ''));
@@ -50,13 +44,11 @@ function createLineChart() {
             const month = String(d2.Month).padStart(2, '0');
             const day = String(d2.Day).padStart(2, '0');
             
-            // Construct the full date string
+                // Construct the full date string
             d2.Date = d3.timeParse('%Y-%m-%d')(d2.Year + "-" + month + "-" + day);
-            
-            // Parse the Effective Federal Funds Rate
+
             d2['Effective Federal Funds Rate'] = parseFloat(d2['Effective Federal Funds Rate'].replace(',', ''));
             
-            // Parse Unemployment Rate and Inflation Rate if they exist
             if (d2['Unemployment Rate']) {
                 d2['Unemployment Rate'] = parseFloat(d2['Unemployment Rate'].replace(',', ''));
             }
@@ -84,10 +76,6 @@ function createLineChart() {
             inflation: inflationData
         };
         
-        console.log("Unemployment data prepared: ", unemploymentData.length, " entries");
-        console.log("Inflation data prepared: ", inflationData.length, " entries");
-        
-        // 차트 크기 변수들 - 함수 위쪽으로 이동
         const width = 900;
         const height = 400;
         const margin = { top: 40, right: 150, bottom: 60, left: 80 };
@@ -105,53 +93,22 @@ function createLineChart() {
                      d['Unemployment Rate'] < 20)
             .sort((a, b) => a.Date - b.Date);
 
-        // 데이터 구조를 더 자세히 살펴보기
-        console.log("데이터 객체의 모든 속성:", Object.keys(initialData2[0]));
-        console.log("첫 번째 데이터 객체 전체:", initialData2[0]);
-
-        // 실제 인플레이션 데이터가 있는 객체를 찾기
-        const sampleWithInflation = initialData2.find(d => {
-            for (const key in d) {
-                if (key.toLowerCase().includes('inflation')) {
-                    return true;
-                }
-            }
-            return false;
-        });
-        console.log("인플레이션 관련 속성이 있는 객체:", sampleWithInflation);
-
-        // 인플레이션 속성 이름 찾기
-        let inflationPropertyName = '';
-        if (sampleWithInflation) {
-            for (const key in sampleWithInflation) {
-                if (key.toLowerCase().includes('inflation')) {
-                    inflationPropertyName = key;
-                    break;
-                }
-            }
-        }
-        console.log("인플레이션 속성 이름:", inflationPropertyName);
-
-        // 올바른 속성 이름으로 데이터 필터링
-        const initialInflationData = initialData2
-            .filter(d => {
-                if (!inflationPropertyName) return false;
-                
-                const value = d[inflationPropertyName];
-                return value !== undefined && 
-                       value !== null && 
-                       value !== '' &&
-                       !isNaN(parseFloat(value)) &&
-                       d.Date && !isNaN(d.Date.getTime());
-            })
-            .map(d => ({
-                Date: d.Date,
-                'Inflation Rate': parseFloat(d[inflationPropertyName])
-            }))
-            .sort((a, b) => a.Date - b.Date);
-
-        console.log("추출된 인플레이션 데이터:", initialInflationData.slice(0, 10));
-        console.log("추출된 인플레이션 데이터 길이:", initialInflationData.length);
+        const inflationPropertyName = Object.keys(initialData2[0] || {})
+            .find(key => key.toLowerCase().includes('inflation'));
+            
+        const initialInflationData = inflationPropertyName ? 
+            initialData2
+                .filter(d => {
+                    const value = d[inflationPropertyName];
+                    return value !== undefined && 
+                           !isNaN(parseFloat(value)) &&
+                           d.Date && !isNaN(d.Date.getTime());
+                })
+                .map(d => ({
+                    Date: d.Date,
+                    'Inflation Rate': parseFloat(d[inflationPropertyName])
+                }))
+                .sort((a, b) => a.Date - b.Date) : [];
 
         // Define bisect for tooltip
         const bisect = d3.bisector(d => d.Date).left;
@@ -247,9 +204,7 @@ function createLineChart() {
             inRange: r.start >= minDate && r.end <= maxDate
         })));
         
-        // Draw the recession zones FIRST (before any other elements)
         recessions.forEach(recession => {
-            // Make sure dates are valid and within range
             if (recession.start && recession.end && 
                 !isNaN(recession.start) && !isNaN(recession.end) &&
                 recession.start >= minDate && recession.end <= maxDate) {
@@ -267,12 +222,11 @@ function createLineChart() {
                         .attr("width", rectWidth)
                         .attr("height", rectHeight)
                         .attr("fill", "#CCCCCC")
-                        .attr("opacity", 0.8);
+                        .attr("opacity", 0.9);
                 }
             }
         });
         
-        // Add grid lines
         svg.append('g')
             .attr('class', 'grid')
             .attr('transform', `translate(0,${height - margin.bottom})`)
@@ -283,7 +237,6 @@ function createLineChart() {
             .selectAll('line')
             .style('stroke', '#eee');
 
-        // Now add bars and lines
         const barWidth = 2;
         const bars = svg.selectAll('rect.interest-bar')
             .data(initialData2.filter(d => 
@@ -297,7 +250,6 @@ function createLineChart() {
             .attr('y', d => y2(d['Effective Federal Funds Rate']))
             .attr('width', barWidth)
             .attr('height', d => {
-                // 변수 이름 충돌을 방지하기 위해 barHeight로 변경
                 const barHeight = height - margin.bottom - y2(d['Effective Federal Funds Rate']);
                 return isNaN(barHeight) || barHeight < 0 ? 0 : barHeight;
             })
@@ -320,78 +272,16 @@ function createLineChart() {
             .attr('stroke-width', 2)
             .attr('stroke-dasharray', '4,2')
             .attr('d', unemploymentLine);
-            
-        // 유효한 데이터가 있는지 확인
-        if (initialInflationData.length === 0) {
-            console.error("유효한 인플레이션 데이터를 찾을 수 없습니다!");
-            // 대안적인 접근법: 실업률 데이터를 기반으로 새로운 가상 데이터 생성
-            console.log("대체 데이터를 생성합니다...");
-            
-            // 실업률 데이터를 기반으로 간단한 가상의 인플레이션 데이터 생성
-            const simulatedInflationData = initialUnemploymentData.map(d => ({
-                Date: d.Date,
-                'Inflation Rate': d['Unemployment Rate'] * (Math.random() * 0.5 + 0.25) // 실업률의 25-75% 수준
-            }));
-            
-            console.log("시뮬레이션된 인플레이션 데이터:", simulatedInflationData.slice(0, 10));
-            
-            // 시뮬레이션된 데이터 사용
-            const inflationPath = svg.append('path')
-                .datum(simulatedInflationData)
-                .attr('class', 'inflation-line')
-                .attr('fill', 'none')
-                .attr('stroke', 'green')
-                .attr('stroke-width', 1.5)
-                .attr('stroke-dasharray', '3,3') // 점선으로 표시하여 가상 데이터임을 나타냄
-                .attr('d', d3.line()
-                    .x(d => x(d.Date))
-                    .y(d => y4(d['Inflation Rate']))
-                    .curve(d3.curveBasis)
-                );
-            
-            // 몇몇 포인트만 표시
-            svg.selectAll('.inflation-point')
-                .data(simulatedInflationData.filter((d, i) => i % 12 === 0)) // 매월 하나만 표시
-                .enter()
-                .append('circle')
-                .attr('class', 'inflation-point')
-                .attr('cx', d => x(d.Date))
-                .attr('cy', d => y4(d['Inflation Rate']))
-                .attr('r', 2)
-                .attr('fill', 'green');
-            
-            // 가상 데이터임을 나타내는 텍스트 추가
-            svg.append('text')
-                .attr('x', width - margin.right - 100)
-                .attr('y', height - margin.bottom - 10)
-                .attr('text-anchor', 'end')
-                .attr('font-size', '10px')
-                .attr('fill', 'green')
-                .text('(Simulated Inflation Data)');
-        } else {
-            // 실제 인플레이션 데이터 시각화
-            const inflationPath = svg.append('path')
-                .datum(initialInflationData)
-                .attr('class', 'inflation-line')
-                .attr('fill', 'none')
-                .attr('stroke', 'green')
-                .attr('stroke-width', 1.5)
-                .attr('d', inflationLine);
-            
-            // 주요 데이터 포인트만 점으로 표시 (모든 점을 표시하면 너무 혼잡함)
-            svg.selectAll('.inflation-point')
-                .data(initialInflationData.filter((d, i) => i % 6 === 0)) // 6개월마다 하나씩 표시
-                .enter()
-                .append('circle')
-                .attr('class', 'inflation-point')
-                .attr('cx', d => x(d.Date))
-                .attr('cy', d => y4(d['Inflation Rate']))
-                .attr('r', 2)
-                .attr('fill', 'green')
-                .attr('stroke', 'white')
-                .attr('stroke-width', 0.5);
-        }
 
+         // 실제 인플레이션 데이터 시각화
+        const inflationPath = svg.append('path')
+            .datum(initialInflationData)
+            .attr('class', 'inflation-line')
+            .attr('fill', 'none')
+            .attr('stroke', 'green')
+            .attr('stroke-width', 1.5)
+            .attr('d', inflationLine);
+        
         // Simple tooltip implementation
         function mousemove(event) {
             const mouseX = d3.pointer(event)[0];
@@ -434,11 +324,18 @@ function createLineChart() {
                 .duration(500)
                 .attr('d', line);
             
-            // Update y-axis
-            svg.select('.y-axis')
+            // Update axes with smooth transitions
+            svg.select(".x-axis")
                 .transition()
                 .duration(500)
-                .call(d3.axisLeft(y1));
+                .call(d3.axisBottom(x))
+                .style('font-size', '14px');
+            
+            svg.select(".y-axis")
+                .transition()
+                .duration(500)
+                .call(d3.axisLeft(y1))
+                .style('font-size', '14px');
         });
 
         document.getElementById('date-change').addEventListener('click', function() {
@@ -452,18 +349,6 @@ function createLineChart() {
         
         createCorrelationHeatmap(data1, data2);
 
-        // 인플레이션 데이터 디버깅 코드
-        console.log("원본 인플레이션 데이터:", initialData2.filter(d => d['Inflation Rate'] !== undefined).slice(0, 10));
-        console.log("필터링된 인플레이션 데이터:", initialInflationData.slice(0, 10));
-        console.log("인플레이션 데이터 포인트 간 일수 간격:");
-        for (let i = 1; i < Math.min(20, initialInflationData.length); i++) {
-            const prevDate = initialInflationData[i-1].Date;
-            const currDate = initialInflationData[i].Date;
-            const daysDiff = (currDate - prevDate) / (1000 * 60 * 60 * 24);
-            console.log(`${i-1} → ${i}: ${daysDiff}일, 값: ${initialInflationData[i-1]['Inflation Rate']} → ${initialInflationData[i]['Inflation Rate']}`);
-        }
-
-        // SVG 차트에 축을 추가합니다
         svg.append('g')
             .attr('class', 'x-axis')
             .attr('transform', `translate(0,${height - margin.bottom})`)
@@ -490,7 +375,7 @@ function createLineChart() {
             .attr("x", -(height / 2))
             .attr("dy", "1em")
             .attr("text-anchor", "middle")
-            .text("Interest Rate (%)");
+            .text("Rate (%)");
         
         svg.append('g')
             .attr('class', 'y-axis-right')  // 클래스 이름 변경하여 충돌 방지
@@ -499,26 +384,6 @@ function createLineChart() {
             .selectAll('text')
             .style('font-size', '14px'); 
 
-        svg.append("text")
-            .attr("transform", "rotate(-90)")
-            .attr("y", margin.left - 35)
-            .attr("x", -(height / 2))
-            .attr("dy", "1em")
-            .style("text-anchor", "middle")
-            .style("fill", "#d62728")  // 실업률 선 색상과 일치
-            .style("font-size", "10px")
-            .text("Unemployment (%)");
-        
-        svg.append("text")
-            .attr("transform", "rotate(-90)")
-            .attr("y", margin.left - 15)
-            .attr("x", -(height / 2))
-            .attr("dy", "1em")
-            .style("text-anchor", "middle")
-            .style("fill", "#2ca02c")  // 인플레이션 선 색상과 일치
-            .style("font-size", "10px")
-            .text("Inflation (%)");
-        
         // 범례 추가
         const legend = svg.append("g")
             .attr("class", "legend")
@@ -599,42 +464,36 @@ function createLineChart() {
             .text("Recession")
             .style("font-size", "12px");
 
-        // 드롭다운 메뉴 기능 구현
+
         document.getElementById('indicator-select').addEventListener('change', function() {
             const selectedIndicator = this.value;
             
-            // 기본적으로 모든 인디케이터 선과 관련 축 숨기기
-            svg.select('.unemployment-line').style('opacity', 0.2);
-            svg.select('.inflation-line').style('opacity', 0.2);
-            svg.selectAll('.inflation-point').style('opacity', 0.2);
-            svg.selectAll('.interest-bar').style('opacity', 0.2);
+
+            svg.selectAll('rect').style('opacity', 0.1);
+            svg.select('.unemployment-line').style('opacity', 0.1);
+            svg.select('.inflation-line').style('opacity', 0.1);
             
-            // 선택된 인디케이터만 강조 표시
+
             switch(selectedIndicator) {
                 case 'interest':
-                    svg.selectAll('.interest-bar').style('opacity', 1);
+                    svg.selectAll('rect').style('opacity', 1);
                     break;
                 case 'unemployment':
                     svg.select('.unemployment-line').style('opacity', 1);
                     break;
                 case 'inflation':
                     svg.select('.inflation-line').style('opacity', 1);
-                    svg.selectAll('.inflation-point').style('opacity', 1);
                     break;
                 default:
-                    // 모든 인디케이터 표시
-                    svg.select('.unemployment-line').style('opacity', 1);
+                    svg.select('.line').style('opacity', 1);
                     svg.select('.inflation-line').style('opacity', 1);
-                    svg.selectAll('.inflation-point').style('opacity', 1);
-                    svg.selectAll('.interest-bar').style('opacity', 1);
-                    break;
             }
         });
 
-        // 왼쪽 y-축(Closing Price)에 대한 레이블 다시 추가
+
         svg.append("text")
             .attr("transform", "rotate(-90)")
-            .attr("y", margin.left - 80)  // 왼쪽 축에 가깝게 위치
+            .attr("y", margin.left - 80)  
             .attr("x", -(height / 2))
             .attr("dy", "1em")
             .attr("text-anchor", "middle")
@@ -681,14 +540,12 @@ function alignData(data1, data2) {
         }
     });
     
-    // Add economic indicators
     data2.forEach(d => {
         if (d.Date) {
             const dateKey = dateFormat(d.Date);
             if (dateMap.has(dateKey)) {
                 const entry = dateMap.get(dateKey);
                 
-                // Add each indicator if it exists and is a valid number
                 if (d['Effective Federal Funds Rate'] !== undefined && 
                     !isNaN(d['Effective Federal Funds Rate'])) {
                     entry['Interest Rate'] = d['Effective Federal Funds Rate'];
@@ -940,7 +797,6 @@ function updateChart(data1, data2, svg, x, y1, y2, line, bars, path,
         endDate = maxDate
     }
     
-    // Filter and ensure data is valid before updating
     const filteredData1 = data1.filter(d1 => 
         d1.Date && !isNaN(d1.Date) && 
         d1.Date >= startDate && d1.Date <= endDate &&
@@ -949,10 +805,11 @@ function updateChart(data1, data2, svg, x, y1, y2, line, bars, path,
     
     const filteredData2 = data2.filter(d2 => 
         d2.Date && !isNaN(d2.Date) && 
-        d2.Date >= startDate && d2.Date <= endDate
+        d2.Date >= startDate && d2.Date <= endDate &&
+        d2['Effective Federal Funds Rate'] !== undefined && 
+        !isNaN(d2['Effective Federal Funds Rate'])
     );
 
-    // Filter unemployment and inflation data with improved handling
     const filteredUnemploymentData = filteredData2
         .filter(d => d['Unemployment Rate'] !== undefined && 
                !isNaN(d['Unemployment Rate']) && 
@@ -974,115 +831,131 @@ function updateChart(data1, data2, svg, x, y1, y2, line, bars, path,
         }))
         .sort((a, b) => a.Date - b.Date);
 
-    x.domain([startDate, endDate]).nice();
-    y1.domain([d3.min(filteredData1, d1 => d1['Close']) * 0.95, 
-            d3.max(filteredData1, d1 => d1['Close']) * 1.05]).nice();
-    y2.domain([0, d3.max(filteredData2, d2 => d2['Effective Federal Funds Rate']) * 1.1]).nice();
+    // Update domains based on filtered data
+    x.domain([startDate, endDate]);
     
+    // Update y1 domain (S&P 500) only if there is data
+    if (filteredData1.length > 0) {
+        y1.domain([d3.min(filteredData1, d1 => d1['Close']) * 0.95, 
+                 d3.max(filteredData1, d1 => d1['Close']) * 1.05]).nice();
+    }
+    
+    // Update y2 domain (Interest Rate) only if there is data
+    if (filteredData2.length > 0) {
+        y2.domain([0, d3.max(filteredData2, d2 => d2['Effective Federal Funds Rate']) * 1.05]).nice();
+    }
+    
+    // Update the line
     path.datum(filteredData1)
+        .transition()
+        .duration(500)
         .attr('d', line);
-
+    
+    // Update the bars
     bars.data(filteredData2)
         .transition()
         .duration(500)
         .attr('x', d2 => x(d2.Date) - barWidth / 2)
-        .attr('y', d2 => y2(d2['Effective Federal Funds Rate']))
+        .attr('y', d2 => {
+            const yPos = y2(d2['Effective Federal Funds Rate']);
+            return isNaN(yPos) ? height - margin.bottom : yPos;
+        })
         .attr('height', d2 => {
             const barHeight = height - margin.bottom - y2(d2['Effective Federal Funds Rate']);
             return isNaN(barHeight) || barHeight < 0 ? 0 : barHeight;
         });
 
+    const yearDiff = endDate.getFullYear() - startDate.getFullYear();
+    const tickCount = Math.max(5, Math.min(10, yearDiff));
+    
     svg.select('.x-axis')
         .transition()
         .duration(500)
-        .call(d3.axisBottom(x))
+        .call(d3.axisBottom(x).ticks(tickCount))
+        .selectAll('text')
         .style('font-size', '14px');
-
+    
+    // Update y axis with animation
     svg.select('.y-axis')
         .transition()
         .duration(500)
         .call(d3.axisLeft(y1))
+        .selectAll('text')
         .style('font-size', '14px');
-
-    svg.selectAll('.y-axis')
+    
+    // Update secondary y axis with animation
+    svg.select('.y-axis2')
         .transition()
         .duration(500)
         .call(d3.axisRight(y2))
+        .selectAll('text')
         .style('font-size', '14px');
         
-    // Update unemployment and inflation lines
-    unemploymentPath.datum(filteredUnemploymentData)
+
+    const unemploymentY = d3.scaleLinear()
+        .domain([0, d3.max(filteredUnemploymentData, d => d['Unemployment Rate']) * 1.05])
+        .nice()
+        .range([height - margin.bottom, margin.top]);
+        
+    unemploymentLine.y(d => unemploymentY(d['Unemployment Rate']));
+    
+    unemploymentPath
+        .datum(filteredUnemploymentData)
         .transition()
         .duration(500)
         .attr('d', unemploymentLine);
+    
+
+    const inflationY = d3.scaleLinear()
+        .domain([
+            d3.min(filteredInflationData, d => d['Inflation Rate']) < 0 ? 
+                d3.min(filteredInflationData, d => d['Inflation Rate']) * 1.05 : 0, 
+            d3.max(filteredInflationData, d => d['Inflation Rate']) * 1.05
+        ])
+        .nice()
+        .range([height - margin.bottom, margin.top]);
         
-    if (inflationPath) {
-        inflationPath.datum(filteredInflationData)
-            .transition()
-            .duration(500)
-            .attr('d', inflationLine);
-    }
-
-    // Update recession zones when date range changes
-    svg.selectAll(".recession-zone").remove();
+    inflationLine.y(d => inflationY(d['Inflation Rate']));
     
-    // Redraw recession zones with new scale and safety checks
-    recessions.forEach(recession => {
-        if (recession.start && recession.end && 
-            !isNaN(recession.start) && !isNaN(recession.end) &&
-            recession.start >= startDate && recession.end <= endDate) {
-            
-            const rectX = x(recession.start);
-            const rectWidth = x(recession.end) - x(recession.start);
-            const rectHeight = height - margin.top - margin.bottom;
-            
-            // Only draw if dimensions are valid
-            if (!isNaN(rectX) && !isNaN(rectWidth) && rectWidth > 0 && rectHeight > 0) {
-                svg.append("rect")
-                    .attr("class", "recession-zone")
-                    .attr("x", rectX)
-                    .attr("y", margin.top)
-                    .attr("width", rectWidth)
-                    .attr("height", rectHeight)
-                    .attr("fill", "#CCCCCC")
-                    .attr("opacity", 0.8);
-            }
-        }
-    });
-
-    // Update correlation heatmap with filtered data
-    createCorrelationHeatmap(filteredData1, filteredData2);
-
-    // 인플레이션 데이터 포인트 업데이트
-    const inflationPoints = svg.selectAll('.inflation-point')
-        .data(filteredInflationData);
-    
-    inflationPoints.exit().remove();
-    
-    inflationPoints.enter()
-        .append('circle')
-        .attr('class', 'inflation-point')
-        .attr('r', 2)
-        .attr('fill', 'green')
-        .attr('stroke', 'white')
-        .attr('stroke-width', 0.5)
-        .merge(inflationPoints)
+    inflationPath
+        .datum(filteredInflationData)
         .transition()
         .duration(500)
-        .attr('cx', d => x(d.Date))
-        .attr('cy', d => y4(d['Inflation Rate']));
+        .attr('d', inflationLine);
+   
+    if (recessions) {
+        svg.selectAll(".recession-zone").remove();
+        
+
+        recessions.forEach(recession => {
+            if (recession.start && recession.end && 
+                !isNaN(recession.start) && !isNaN(recession.end) &&
+                ((recession.start >= startDate && recession.start <= endDate) || 
+                 (recession.end >= startDate && recession.end <= endDate) ||
+                 (recession.start <= startDate && recession.end >= endDate))) {
+                
+                const rectStart = Math.max(startDate, recession.start);
+                const rectEnd = Math.min(endDate, recession.end);
+                const rectX = x(rectStart);
+                const rectWidth = x(rectEnd) - x(rectStart);
+                const rectHeight = height - margin.top - margin.bottom;
+                
+                // Only draw if dimensions are valid
+                if (!isNaN(rectX) && !isNaN(rectWidth) && rectWidth > 0 && rectHeight > 0) {
+                    svg.append("rect")
+                        .attr("class", "recession-zone")
+                        .attr("x", rectX)
+                        .attr("y", margin.top)
+                        .attr("width", rectWidth)
+                        .attr("height", rectHeight)
+                        .attr("fill", "#CCCCCC")
+                        .attr("opacity", 0.5);
+                }
+            }
+        });
+    }
 }
 
-// Call createLineChart when the page loads
 document.addEventListener("DOMContentLoaded", function() {
     createLineChart();
 });
-
-// 불필요한 외부 스크립트 간섭 방지
-window.addEventListener('error', function(e) {
-    // bundle.js의 merchant 관련 에러 무시
-    if (e.message && e.message.includes("Cannot read properties of undefined (reading 'merchant')")) {
-        e.preventDefault();
-        console.warn("외부 스크립트 에러가 무시되었습니다.");
-    }
-}, true);

@@ -52,6 +52,13 @@ a {
   stroke-width: 1.5;
 }
 
+/* Recession Zone Style */
+.recession-zone {
+  fill: #CCCCCC;
+  opacity: 0.5;
+  pointer-events: none; /* 마우스 이벤트 통과 */
+}
+
 .legend text {
   fill: #333;
 }
